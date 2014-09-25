@@ -1,0 +1,108 @@
+#define BEATCOUNT 16
+#define MIC SENSOR_1
+#define DELTA 18
+#define WAITTIME 100
+
+
+task left()
+{
+	OnFwd(OUT_A, 100);
+	Wait(50);
+	OnRev(OUT_A, 100);
+	Wait(100);
+	Off(OUT_A);
+}
+
+task right()
+{
+	OnFwd(OUT_C, 100);
+	Wait(50);
+	OnRev(OUT_C, 100);
+	Wait(100);
+	Off(OUT_C);
+}
+
+
+task main()
+{
+	SetSensorSound(IN_1);
+
+	int THRESHOLD=0;
+	int SVAVG=0;
+	int BPM = 300; //this should be customizable
+	int COMP = BPM/2;
+	int counter = 0;
+	int time = 0;
+	int SV;
+	int claps=0;
+	int beats[BEATCOUNT];
+	int i = 0;
+	int turn = 0;
+	int hit = 0;
+	int index = 0;
+	
+	int exp = 2^9;
+	
+	THRESHOLD = 99;
+	
+	PlayTone(2000, 40);
+	
+	repeat(999)
+	{
+	
+	counter = 0;
+		index = 0;
+	int array[64];
+	int j = 0;
+	while (j != 64)
+	{
+		array[j]=0;
+		j++;
+	}
+	
+	TextOut(0, LCD_LINE3, "I'm listening!", true);
+	
+	while (counter < 1500)
+	{
+		SV = SENSOR_1;
+		//NumOut(0,0,SV,true);
+		if (SV > THRESHOLD)
+		{
+			//PlayTone(2000, 20);
+			array[index]=counter;
+			index++;
+			//NumOut(0,0,counter,true);
+			Wait(150);
+			counter = 0;
+		}
+		Wait(1);
+		counter++;
+		hit = 0;
+	}
+	
+	j = 1;
+	
+	while (j <= index)
+	{
+		
+		NumOut(0,0,index,true);
+		//NumOut(40,0,array[j],true);
+		if (turn == 0)
+		{
+			StartTask(left);
+			turn = 1;
+		}
+		else
+		{
+			StartTask(right);
+			turn = 0;
+		}
+		Wait((array[j]+150));
+		j++;
+	}
+		
+		Wait(600);
+		
+	}	
+	
+}
